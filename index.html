@@ -1,189 +1,93 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1">
-
-  <title>太平山 QR 掃描測試 V2.0.1</title>
-
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Arial, "Microsoft JhengHei", sans-serif;
-      background: #f1f5fa;
-      color: #243447;
-    }
-
-    header {
-      background: #1767d2;
-      padding: 24px 12px;
-      text-align: center;
-      color: white;
-    }
-
-    h1 { font-size: 23px; margin: 0 0 8px; }
-
-    main {
-      max-width: 480px;
-      margin: auto;
-      padding: 18px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 14px;
-      margin-bottom: 15px;
-    }
-
-    #reader {
-      width: 100%;
-      overflow: hidden;
-    }
-
-    button {
-      width: 100%;
-      border: 0;
-      border-radius: 10px;
-      padding: 16px;
-      margin-top: 12px;
-      font-size: 17px;
-      font-weight: bold;
-      background: #1767d2;
-      color: white;
-    }
-
-    button:disabled { opacity: .5; }
-
-    .secondary { background: #60748e; }
-
-    #result {
-      word-break: break-all;
-      padding: 14px;
-      border-radius: 10px;
-      background: #e8f7ef;
-      margin-top: 15px;
-      line-height: 1.8;
-    }
-
-    #message {
-      margin-top: 12px;
-      line-height: 1.8;
-      color: #b42318;
-      word-break: break-word;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>太平山旅遊 QR 報到 V2.1 Test</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f1f5fb;color:#26374a;font-family:Arial,'Microsoft JhengHei',sans-serif}
+header{background:#1767d2;color:white;text-align:center;padding:22px 12px}header h1{font-size:24px;margin:0 0 8px}header p{margin:0}
+main{max-width:540px;margin:auto;padding:15px}.card{background:#fff;border-radius:14px;padding:19px;margin-bottom:15px;box-shadow:0 3px 14px #233c5612}
+h2{font-size:20px;margin:0 0 15px;color:#185ba5}input{width:100%;font-size:17px;padding:14px;border:1px solid #c6d4e5;border-radius:10px}
+button{width:100%;padding:15px 12px;margin-top:10px;border:0;border-radius:10px;font-size:17px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.48}.blue{background:#1767d2;color:#fff}.green{background:#168452;color:#fff}.gray{background:#e6edf7;color:#22527f}.red{background:#ffebe8;color:#a62618}
+.hidden{display:none!important}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:15px}.stat{text-align:center;background:#fff;border-radius:12px;padding:16px 4px}
+.stat span{display:block;color:#6d7c8d;font-size:13px}.stat strong{display:block;font-size:29px;color:#1767d2;margin-top:8px}
+#reader{width:100%;overflow:hidden;border-radius:10px}.message{padding:14px;border-radius:10px;margin-bottom:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.info{background:#e8f2ff;color:#17578a}.success{background:#e8f7ef;color:#176c49}.warning{background:#fff3dc;color:#885700}.error{background:#ffedeb;color:#a32820}
+.detail{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #e5ebf2;padding:12px 0}.detail span{color:#6b7a8e}.detail strong{text-align:right;overflow-wrap:anywhere}
+.hint{color:#6e7b8c;font-size:13px;line-height:1.7}footer{text-align:center;color:#8b99a8;font-size:13px;padding:10px 0 24px}
+</style>
 </head>
-
 <body>
-
-<header>
-  <h1>太平山旅遊</h1>
-  QR Code 相機測試 V2.0.1
-</header>
-
+<header><h1>太平山旅遊</h1><p>QR Code 現場報到系統 V2.1 Test</p></header>
 <main>
-  <div class="card">
-    <h2>手機相機掃描</h2>
-
-    <div id="reader"></div>
-
-    <button id="startBtn" onclick="startCamera()">
-      開啟相機掃描
-    </button>
-
-    <button class="secondary"
-            onclick="stopCamera()">
-      停止相機
-    </button>
-
-    <div id="message"></div>
-    <div id="result" hidden></div>
-  </div>
+<section id="loginPanel" class="card"><h2>工作人員登入</h2><p class="hint">使用 Vercel 設定的工作人員密碼登入（與舊版 STAFF_PIN 可以不同）。</p>
+<input id="password" type="password" autocomplete="off" placeholder="工作人員密碼"><button id="loginBtn" class="blue" onclick="login()">登入報到系統</button></section>
+<section id="appPanel" class="hidden">
+<div class="stats"><div class="stat"><span>總報名</span><strong id="total">0</strong></div><div class="stat"><span>已報到</span><strong id="checked">0</strong></div><div class="stat"><span>未報到</span><strong id="pending">0</strong></div></div>
+<div class="card"><h2>掃描旅客 QR Code</h2><div id="reader"></div>
+<button id="startBtn" class="blue" onclick="startCamera()">開啟相機掃描</button>
+<button id="stopBtn" class="gray hidden" onclick="stopCamera()">停止相機</button>
+<p class="hint">將 QR Code 放在掃描框內；掃描到編號後先核對姓名，必須按「確認完成報到」才會寫入試算表。</p></div>
+<div class="card"><h2>手動查詢</h2><input id="code" placeholder="TP-XXXXXXXXXXXXXXXX" autocapitalize="characters" autocomplete="off"><button id="lookupBtn" class="blue" onclick="lookup()">查詢報名資料</button></div>
+<section id="personPanel" class="card hidden"><h2>旅客資料</h2>
+<div class="detail"><span>姓名</span><strong id="name"></strong></div>
+<div class="detail"><span>電話</span><strong id="phone"></strong></div>
+<div class="detail"><span>報到編號</span><strong id="personCode"></strong></div>
+<div class="detail"><span>狀態</span><strong id="status"></strong></div>
+<div id="timeRow" class="detail hidden"><span>報到時間</span><strong id="checkedAt"></strong></div>
+<button id="confirmBtn" class="green" onclick="confirmArrival()">確認完成報到</button><button class="gray" onclick="nextPerson()">下一位旅客</button></section>
+<button class="gray" onclick="refreshStats()">更新報到人數</button><button class="red" onclick="logout()">登出</button>
+</section>
+<div id="message" class="message info hidden"></div><footer>太平山旅遊 QR 報到 V2.1 測試版</footer>
 </main>
-
 <script>
-  let scanner = null;
-  let running = false;
-  let starting = false;
-  let detected = false;
-
-  const msg = document.getElementById("message");
-  const result = document.getElementById("result");
-  const startBtn = document.getElementById("startBtn");
-
-  async function startCamera() {
-    if (running || starting) return;
-
-    if (!window.isSecureContext) {
-      msg.textContent = "網頁不是安全 HTTPS 環境。";
-      return;
-    }
-
-    if (typeof Html5Qrcode === "undefined") {
-      msg.textContent = "QR Code 掃描程式庫載入失敗。";
-      return;
-    }
-
-    starting = true;
-    startBtn.disabled = true;
-    detected = false;
-    result.hidden = true;
-    msg.textContent = "正在啟動相機……";
-
-    try {
-      if (!scanner) {
-        scanner = new Html5Qrcode("reader");
-      }
-
-      await scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-
-        async decodedText => {
-          if (detected) return;
-          detected = true;
-
-          result.hidden = false;
-          result.textContent =
-            "掃描成功！\n\n" + decodedText;
-
-          msg.textContent = "";
-          await stopCamera();
-        },
-        () => {}
-      );
-
-      running = true;
-      msg.textContent = "相機已啟動，請對準 QR Code。";
-
-    } catch (e) {
-      msg.textContent =
-        "相機啟動失敗：" + (e.message || String(e));
-    } finally {
-      starting = false;
-      startBtn.disabled = false;
-    }
-  }
-
-  async function stopCamera() {
-    if (!scanner || !running) return;
-
-    try {
-      await scanner.stop();
-    } catch (e) {
-      console.warn(e);
-    } finally {
-      running = false;
-    }
-  }
+const el=id=>document.getElementById(id);
+let password='',currentCode='',scanner=null,running=false,starting=false,busy=false,scanCaptured=false;
+function toggle(id,visible){el(id).classList.toggle('hidden',!visible)}
+function message(text,type='info'){const node=el('message');node.textContent=text||'';node.className='message '+type+(text?'':' hidden')}
+function stats(s){if(!s)return;el('total').textContent=s.total;el('checked').textContent=s.checked;el('pending').textContent=s.pending}
+async function request(action,code=''){
+ const response=await fetch('/api/checkin',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({password,action,code})});
+ let data;try{data=await response.json()}catch{throw new Error('API 未回傳 JSON，請檢查 Vercel 部署')}
+ if(response.status===401) throw new Error('工作人員密碼不正確');
+ if(!response.ok && !data.message) throw new Error('API HTTP '+response.status);
+ return data;
+}
+async function login(){if(busy)return;const value=el('password').value;if(!value){message('請輸入密碼','warning');return}
+ password=value;busy=true;el('loginBtn').disabled=true;message('正在登入…');
+ try{const data=await request('stats');if(!data.ok)throw new Error(data.message);stats(data.stats);el('password').value='';toggle('loginPanel',false);toggle('appPanel',true);message('登入成功，請掃描 QR Code 或手動查詢','success')}
+ catch(err){password='';message(err.message,'error')}
+ finally{busy=false;el('loginBtn').disabled=false}}
+function showPerson(p){currentCode=p.code;toggle('personPanel',true);el('name').textContent=p.name;el('phone').textContent=p.phone;el('personCode').textContent=p.code;el('status').textContent=p.status;el('checkedAt').textContent=p.checkedAt||'';toggle('timeRow',!!p.checkedAt);toggle('confirmBtn',!p.checked)}
+async function lookup(value){if(busy)return;const code=String(value===undefined?el('code').value:value).trim().toUpperCase();
+ if(!code){message('請輸入報到編號','warning');return}busy=true;el('lookupBtn').disabled=true;currentCode='';toggle('personPanel',false);message('查詢中…');
+ try{await stopCamera();const data=await request('lookup',code);if(!data.ok)throw new Error(data.message);stats(data.stats);showPerson(data.person);el('code').value=data.person.code;message(data.person.checked?'已報到，不能再次報到':'資料找到！請核對姓名後確認報到',data.person.checked?'warning':'success')}
+ catch(err){message(err.message,'error')}
+ finally{busy=false;el('lookupBtn').disabled=false}}
+async function confirmArrival(){if(busy||!currentCode)return;
+ if(!confirm('確認旅客身分無誤，完成報到？'))return;busy=true;el('confirmBtn').disabled=true;message('正在記錄報到…');
+ try{const data=await request('confirm',currentCode);if(data.stats)stats(data.stats);if(data.person)showPerson(data.person);
+ if(!data.ok){message(data.message||'報到失敗',data.alreadyChecked?'warning':'error');return}
+ message('報到成功！'+data.person.name+' 已完成報到。','success')}
+ catch(err){message(err.message,'error')}
+ finally{busy=false;if(currentCode&&el('status').textContent!=='已報到')el('confirmBtn').disabled=false}}
+async function refreshStats(){if(busy)return;try{const d=await request('stats');if(!d.ok)throw new Error(d.message);stats(d.stats);message('人數已更新','success')}catch(e){message(e.message,'error')}}
+function nextPerson(){if(busy)return;currentCode='';el('code').value='';toggle('personPanel',false);message('請掃描下一位旅客');refreshStats()}
+async function startCamera(){if(running||starting||busy)return;if(!window.isSecureContext){message('請使用 HTTPS 網址','error');return}
+ if(typeof Html5Qrcode==='undefined'){message('掃描函式庫載入失敗','error');return}
+ starting=true;el('startBtn').disabled=true;scanCaptured=false;
+ try{if(!scanner)scanner=new Html5Qrcode('reader');
+ await scanner.start({facingMode:'environment'},{fps:10,qrbox:250},decoded=>{
+ if(scanCaptured||busy)return;scanCaptured=true;el('code').value=decoded;lookup(decoded);
+ },()=>{});
+ running=true;toggle('startBtn',false);toggle('stopBtn',true);message('相機已啟動，請對準 QR Code')}
+ catch(err){running=false;message('相機無法啟動：'+(err.message||err),'error')}
+ finally{starting=false;el('startBtn').disabled=false}}
+async function stopCamera(){if(!scanner||!running)return;running=false;try{await scanner.stop()}catch(e){console.warn(e)}toggle('startBtn',true);toggle('stopBtn',false)}
+async function logout(){if(busy)return;await stopCamera();password='';currentCode='';el('password').value='';el('code').value='';toggle('appPanel',false);toggle('loginPanel',true);toggle('personPanel',false);message('已登出')}
 </script>
-
 </body>
 </html>
