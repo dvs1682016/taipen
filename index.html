@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+
+  <title>太平山 QR 掃描測試 V2.0.1</title>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      background: #f1f5fa;
+      color: #243447;
+    }
+
+    header {
+      background: #1767d2;
+      padding: 24px 12px;
+      text-align: center;
+      color: white;
+    }
+
+    h1 { font-size: 23px; margin: 0 0 8px; }
+
+    main {
+      max-width: 480px;
+      margin: auto;
+      padding: 18px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 15px;
+    }
+
+    #reader {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 12px;
+      font-size: 17px;
+      font-weight: bold;
+      background: #1767d2;
+      color: white;
+    }
+
+    button:disabled { opacity: .5; }
+
+    .secondary { background: #60748e; }
+
+    #result {
+      word-break: break-all;
+      padding: 14px;
+      border-radius: 10px;
+      background: #e8f7ef;
+      margin-top: 15px;
+      line-height: 1.8;
+    }
+
+    #message {
+      margin-top: 12px;
+      line-height: 1.8;
+      color: #b42318;
+      word-break: break-word;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>太平山旅遊</h1>
+  QR Code 相機測試 V2.0.1
+</header>
+
+<main>
+  <div class="card">
+    <h2>手機相機掃描</h2>
+
+    <div id="reader"></div>
+
+    <button id="startBtn" onclick="startCamera()">
+      開啟相機掃描
+    </button>
+
+    <button class="secondary"
+            onclick="stopCamera()">
+      停止相機
+    </button>
+
+    <div id="message"></div>
+    <div id="result" hidden></div>
+  </div>
+</main>
+
+<script>
+  let scanner = null;
+  let running = false;
+  let starting = false;
+  let detected = false;
+
+  const msg = document.getElementById("message");
+  const result = document.getElementById("result");
+  const startBtn = document.getElementById("startBtn");
+
+  async function startCamera() {
+    if (running || starting) return;
+
+    if (!window.isSecureContext) {
+      msg.textContent = "網頁不是安全 HTTPS 環境。";
+      return;
+    }
+
+    if (typeof Html5Qrcode === "undefined") {
+      msg.textContent = "QR Code 掃描程式庫載入失敗。";
+      return;
+    }
+
+    starting = true;
+    startBtn.disabled = true;
+    detected = false;
+    result.hidden = true;
+    msg.textContent = "正在啟動相機……";
+
+    try {
+      if (!scanner) {
+        scanner = new Html5Qrcode("reader");
+      }
+
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+
+        async decodedText => {
+          if (detected) return;
+          detected = true;
+
+          result.hidden = false;
+          result.textContent =
+            "掃描成功！\n\n" + decodedText;
+
+          msg.textContent = "";
+          await stopCamera();
+        },
+        () => {}
+      );
+
+      running = true;
+      msg.textContent = "相機已啟動，請對準 QR Code。";
+
+    } catch (e) {
+      msg.textContent =
+        "相機啟動失敗：" + (e.message || String(e));
+    } finally {
+      starting = false;
+      startBtn.disabled = false;
+    }
+  }
+
+  async function stopCamera() {
+    if (!scanner || !running) return;
+
+    try {
+      await scanner.stop();
+    } catch (e) {
+      console.warn(e);
+    } finally {
+      running = false;
+    }
+  }
+</script>
+
+</body>
+</html>
